@@ -1,7 +1,15 @@
 import Matter from 'matter-js';
 import React, {Component} from 'react';
-import a from './sounds/otro.wav';
+import SoundManager from './SoundManager';
 
+class Tools {
+  static getRandom(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  static getRandomHexaColor() {
+    return '#'+Math.floor(Math.random()*16777215).toString(16);
+  }
+}
 
 class Game extends Component {
   constructor(args) {
@@ -10,10 +18,11 @@ class Game extends Component {
     this.keyDownHandler = e => this.keyDown(e);
     this.keyUpHandler = e => this.keyUp(e);
     this.keyPress = [];
-    this.currentTime = 0;
+    this.currentTime = Date.now();
     this.lastTime = 0;
     this.onFloor = false;
-    this.sounds = { one : new Audio() }
+
+    this.soundManager = new SoundManager();
   }
 
   componentDidMount() {
@@ -29,6 +38,8 @@ class Game extends Component {
 
   keyDown(e) {
     // 49 50 51 52
+    //console.log(e.keyCode);
+    this.currentTime = Date.now();
     this.keyPress[e.keyCode] = true;
   }
 
@@ -42,6 +53,7 @@ class Game extends Component {
         Render = Matter.Render,
         Runner = Matter.Runner,
         Composites = Matter.Composites,
+        Composite = Matter.Composite,
         MouseConstraint = Matter.MouseConstraint,
         Mouse = Matter.Mouse,
         World = Matter.World,
@@ -52,6 +64,8 @@ class Game extends Component {
     // create engine
     let engine = Engine.create(),
         world = engine.world;
+        world.gravity.y = 0;
+
 
     // create renderer
     let render = Render.create({
@@ -60,7 +74,9 @@ class Game extends Component {
         options: {
             width: WIDTH,
             height: HEIGHT,
-            showAngleIndicator: false
+            showAngleIndicator: false,
+            wireframes: false
+
         }
     });
 
@@ -70,83 +86,53 @@ class Game extends Component {
     let runner = Runner.create();
     Runner.run(runner, engine);
 
-//    let colors = {a : '#C44D58', b : '#4ECDC4', c : '#C7F464'};
-
-    var redColor = '#C44D58', greenColor = '#C7F464';
-
-    let options = { restitution : .5, render: {
-                    strokeStyle: '#ec1414',
-                    fillStyle: 'transparent',
-                    lineWidth: 1  }
-                };
-
-  let options2 = { restitution : .5, render: {
-                  strokeStyle: '#ec1414',
-                  fillStyle: 'solid',
-                  lineWidth: 1  }
-              };
-
-    let rect1 = Bodies.rectangle(WIDTH / 2, HEIGHT / 2, 40, 40,  render: {
-            strokeStyle: redColor,
-            fillStyle: 'transparent',
-            lineWidth: 1
-        });
-    let rect2 = Bodies.rectangle(WIDTH / 2, HEIGHT / 2, 40, 40, options2);
-    let rect3 = Bodies.rectangle(WIDTH / 2, HEIGHT / 2, 40, 40, options);
-    let rect4 = Bodies.rectangle(WIDTH / 2, HEIGHT / 2, 40, 40, options);
-
-    World.add(world, [
-        rect1, rect2, rect3,
-        // walls
-      /*  Bodies.rectangle(400, 0, 800, 50, { isStatic: true }),
-        Bodies.rectangle(800, 300, 50, 600, { isStatic: true }),
-        Bodies.rectangle(0, 300, 50, 600, { isStatic: true }),*/
-        Bodies.rectangle(400, 606, 800, 50.5, { isStatic: true })
-    ]);
+    let player = Bodies.rectangle(WIDTH / 2, HEIGHT / 2, 40, 40,  render: {  strokeStyle: "#asdsa", fillStyle: 'transparent',lineWidth: 1});
+    //A bodies container
+    let composite = Composite.create();
+    //Add all bodies to the world
+    World.add(world, player);
 
     //Events
-    let self = this;
+    let move_velocity = 10;
+    let count = 0;
+    let tempRect = null;
 
-    self.sounds.one.src = a;
+    var mouse = Mouse.create(render.canvas),
+      mouseConstraint = MouseConstraint.create(engine, {
+          mouse: mouse,
+          constraint: {
+              stiffness: 0.2,
+              render: {
+                  visible: false
+              }
+          }
+      });
 
-    Events.on(engine, 'beforeUpdate', function(event) {
+    mouseConstraint.mouse.mouseup(()=> {console.log("asd");});
+    mouseConstraint.mouse.mousedown(()=> {console.log("asd");});
 
-      //Jump
-      self.currentTime = Date.now();
+    Events.on(engine, 'beforeUpdate', (event) => {
 
-      if(self.currentTime > self.lastTime && (self.keyPress[49] && self.onFloor)){
-        self.lastTime = self.currentTime + 1000;
+      // Make rect pressing space
+      if(this.keyPress[32] && this.lastTime <= this.currentTime) {
+          //Makes a delay between key and key
+          this.lastTime = this.currentTime + 800;
 
-        Body.setVelocity(rect1, {x : 0, y : - 10});
-        Body.rotate(rect1, 0.1);
-//        self.sounds.one.play();
+          tempRect = makeRect();
+          this.soundManager.get().sound.play();
+          Composite.add(composite, tempRect);
+          World.add(world, composite);
+        }
 
+      //reset spawn logic
+      if(!this.keyPress[32]) {
+        count = 0;
       }
-
-      if(self.currentTime > self.lastTime && (self.keyPress[50] && self.onFloor)){
-        self.lastTime = self.currentTime + 1000;
-
-        Body.setVelocity(rect2, {x : 0, y : - 10});
-        Body.rotate(rect2, 0.1);
-//        self.sounds.one.play();
-
-      }
-
-      if(self.currentTime > self.lastTime && (self.keyPress[51] && self.onFloor)){
-        self.lastTime = self.currentTime + 1000;
-
-        Body.setVelocity(rect3, {x : 0, y : - 10});
-        Body.rotate(rect3, 0.1);
-    //        self.sounds.one.play();
-
-      }
-
-
     });
 
-    Events.on(engine, 'collisionActive', function(e) {
+    Events.on(engine, 'collisionActive', (e)  => {
       //console.log(e);
-      self.onFloor = true;
+      //this.onFloor = true;
 //      self.sounds.one.play();
       //self.sounds.one.play();
     /*  var i, pair,
@@ -160,8 +146,8 @@ class Game extends Component {
       }*/
     });
 
-    Events.on(engine, 'collisionEnd', function(e) {
-      self.onFloor = false;
+    Events.on(engine, 'collisionEnd', (e) => {
+    //  this.onFloor = false;
     /*  var i, pair,
           length = e.pairs.length;
       for(i = 0; i < length; i++) {
@@ -173,11 +159,20 @@ class Game extends Component {
       }*/
     });
 
+    Events.on(engine, 'bodytouched', (body) => {
+      console.log("aa");
+    });
+
     // fit the render viewport to the scene
     Render.lookAt(render, {
         min: { x: 0, y: 0 },
         max: { x: window.innerWidth, y: window.innerHeight }
     });
+
+    function makeRect() {
+        let options = { restitution : .5, isStatic : true, render: {  strokeStyle: Tools.getRandomHexaColor(), fillStyle: 'transparent', lineWidth: 1  } };
+        return Bodies.rectangle(Tools.getRandom(0 , WIDTH), Tools.getRandom(0, HEIGHT), Tools.getRandom(20, 100), Tools.getRandom(20, 100), options);
+    }
 
   }
 
@@ -185,6 +180,5 @@ class Game extends Component {
     return(<div id="game-content"></div>);
   }
 }
-
 
 export default Game;
