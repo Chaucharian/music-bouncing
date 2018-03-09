@@ -3,15 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.2",
     "matter-js": "^0.14.1",
+    "querystring": "^0.2.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
-    "react-scripts": "1.0.17"
+    "react-scripts": "1.0.17",
+    "request": "^2.83.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "run-client-server": "concurrently --kill-others \"react-scripts start\" \"node ./src/server/index.js\"",
+    "start": "react-scripts start && n node src/server/index.js",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
+  },
+  "devDependencies": {
+    "concurrently": "^3.5.1"
   }
 }

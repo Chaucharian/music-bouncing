@@ -29,11 +29,29 @@ class Game extends Component {
     this.init();
     document.addEventListener('keydown', this.keyDownHandler, false);
     document.addEventListener('keyup', this.keyUpHandler, false);
+
+    this.getPics();
   }
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this.keyDownHandler, false);
     document.removeEventListener('keyup', this.keyUpHandler, false);
+  }
+
+  getPics() {
+    fetch("http://localhost:8888/login")
+      .then(res => console.log("asd"))
+      .then(
+        (result) => {
+          console.log("el resul ",result);
+        },
+        // Note: it's important to handle errors here
+        // instead of a catch() block so that we don't swallow
+        // exceptions from actual bugs in components.
+        (error) => {
+
+        }
+      )
   }
 
   keyDown(e) {
@@ -82,6 +100,7 @@ class Game extends Component {
 
     Render.run(render);
 
+
     // create runner
     let runner = Runner.create();
     Runner.run(runner, engine);
@@ -94,7 +113,6 @@ class Game extends Component {
 
     //Events
     let move_velocity = 10;
-    let count = 0;
     let tempRect = null;
 
     var mouse = Mouse.create(render.canvas),
@@ -108,9 +126,6 @@ class Game extends Component {
           }
       });
 
-    mouseConstraint.mouse.mouseup(()=> {console.log("asd");});
-    mouseConstraint.mouse.mousedown(()=> {console.log("asd");});
-
     Events.on(engine, 'beforeUpdate', (event) => {
 
       // Make rect pressing space
@@ -123,11 +138,6 @@ class Game extends Component {
           Composite.add(composite, tempRect);
           World.add(world, composite);
         }
-
-      //reset spawn logic
-      if(!this.keyPress[32]) {
-        count = 0;
-      }
     });
 
     Events.on(engine, 'collisionActive', (e)  => {

@@ -1,12 +1,12 @@
 //Sounds imports
-import _1 from './sounds/choice.mp3';
-import _2 from './sounds/Hihat.wav';
-import _3 from './sounds/rollover.mp3';
-import _4 from './sounds/Hihat_2.wav';
-import _5 from './sounds/Bongo_Soft.wav';
-import _6 from './sounds/Perc_Eco.wav';
-import _7 from './sounds/Bongo_High.wav';
-import _8 from './sounds/Bongo_Soft2.wav';
+import _1 from './assets/sounds/choice.mp3';
+import _2 from './assets/sounds/Hihat.wav';
+import _3 from './assets/sounds/rollover.mp3';
+import _4 from './assets/sounds/Hihat_2.wav';
+import _5 from './assets/sounds/Bongo_Soft.wav';
+import _6 from './assets/sounds/Perc_Eco.wav';
+import _7 from './assets/sounds/Bongo_High.wav';
+import _8 from './assets/sounds/Bongo_Soft2.wav';
 
 
 class Sound {
